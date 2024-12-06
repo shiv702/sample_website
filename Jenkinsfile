@@ -2,9 +2,10 @@ pipeline {
     agent any
     environment {
         IMAGE_NAME = 'sample-website'          // Docker image name
-        DOCKER_WORK_DIR = '/tmp/deploy'        // Working directory on EC2
+        CONTAINER_NAME = 'sample-website-container' // Docker container name
+        DOCKER_WORK_DIR = '/usr/share/nginx/html'        // Working directory on EC2
         SERVERS = '13.49.46.222'               // Comma-separated list of server IPs
-        SSH_CREDENTIALS = 'SSH_CREDENTIALS' // Replace with your Jenkins SSH credentials ID
+        SSH_CREDENTIALS = 'ssh-credentials-id' // Replace with your Jenkins SSH credentials ID
     }
     stages {
         stage('Clone Repository') {
@@ -39,22 +40,26 @@ pipeline {
                         echo "Deploying to ${server}..."
                         sshagent([env.SSH_CREDENTIALS]) {
                             sh """
-                                # SSH into EC2 instance and prepare Docker environment
+                                # Ensure directory exists and set permissions for the ubuntu user
                                 ssh -o StrictHostKeyChecking=no ubuntu@${server} '
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
-                                    sudo rm -rf ${env.DOCKER_WORK_DIR}/* &&
-                                    sudo docker stop ${env.CONTAINER_NAME} || true &&
-                                    sudo docker rm ${env.CONTAINER_NAME} || true
+                                    sudo chown ubuntu:ubuntu ${env.DOCKER_WORK_DIR}
                                 '
                                 
-                                # Copy necessary files to EC2 instance
+                                # Stop and remove the container gracefully
+                                ssh -o StrictHostKeyChecking=no ubuntu@${server} '
+                                    docker stop ${env.CONTAINER_NAME} 2>/dev/null || true &&
+                                    docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
+                                '
+
+                                # Copy files to the EC2 instance
                                 scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@${server}:${env.DOCKER_WORK_DIR}/
-                                
-                                # Build and run Docker container on EC2 instance
+
+                                # Build and run the Docker container
                                 ssh -o StrictHostKeyChecking=no ubuntu@${server} '
                                     cd ${env.DOCKER_WORK_DIR} &&
-                                    sudo docker build -t ${env.IMAGE_NAME} . &&
-                                    sudo docker run -d -p 80:80 --name ${env.IMAGE_NAME} ${env.IMAGE_NAME}
+                                    docker build -t ${env.IMAGE_NAME} . &&
+                                    docker run -d -p 80:80 --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
                                 '
                             """
                         }
