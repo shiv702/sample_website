@@ -1,23 +1,20 @@
 pipeline {
     agent any
     environment {
-        // Define the necessary environment variables
-        IMAGE_NAME = 'sample-website'  // Change to your image name if needed
-        DOCKER_WORK_DIR = '/tmp/deploy'  // Change the work directory as needed
-        SERVERS = env.SERVERS.split(',') // Split SERVERS variable into a list
+        IMAGE_NAME = 'sample-website'  // Docker image name
+        DOCKER_WORK_DIR = '/tmp/deploy'  // Working directory on EC2
+        SERVERS = env.SERVERS.split(',') // Split SERVERS into a list
     }
     stages {
         stage('Clone Repository') {
             steps {
                 echo 'Cloning the repository...'
-                // Specify the branch and repository explicitly
-                git branch: 'main', url: 'https://github.com/shiv702/sample_website.git', credentialsId: 'github-credentials-id' // Replace with your credentialsId
+                git branch: 'main', url: 'https://github.com/shiv702/sample_website.git', credentialsId: 'github-credentials-id' // Replace with your credentials ID
             }
         }
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                // Build the Docker image
                 sh "docker build -t ${env.IMAGE_NAME} ."
             }
         }
@@ -27,9 +24,10 @@ pipeline {
                 // Login to Docker Hub using credentials stored in Jenkins
                 withCredentials([usernamePassword(credentialsId: 'Docker-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh """
-                        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
-                        docker tag ${env.IMAGE_NAME} ${DOCKER_USERNAME}/${env.IMAGE_NAME}:latest
-                        docker push ${DOCKER_USERNAME}/${env.IMAGE_NAME}:latest
+                        # Log in to Docker Hub using credentials from Jenkins credentials store
+                        docker login -u \$DOCKER_USERNAME -p \$DOCKER_PASSWORD
+                        docker tag ${env.IMAGE_NAME} \$DOCKER_USERNAME/${env.IMAGE_NAME}:latest
+                        docker push \$DOCKER_USERNAME/${env.IMAGE_NAME}:latest
                     """
                 }
             }
@@ -41,7 +39,6 @@ pipeline {
                     for (server in SERVERS) {
                         echo "Deploying to ${server}..."
                         sshagent([env.SSH_CREDENTIALS]) {
-                            // SSH commands for deployment
                             sh """
                                 ssh -o StrictHostKeyChecking=no ec2-user@${server} "
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
