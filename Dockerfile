@@ -8,6 +8,6 @@ WORKDIR /usr/share/nginx/html
 COPY index.html .
 
 # Expose the default HTTP port (80) for external access
-EXPOSE 80
+EXPOSE 81
 
 # By default, the NGINX image's entrypoint runs the web server, no need to specify CMD
