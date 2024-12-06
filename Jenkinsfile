@@ -24,9 +24,14 @@ pipeline {
         stage('Push Docker Image (Optional)') {
             steps {
                 echo 'Tagging and pushing Docker image to repository...'
-                // Tag and push to Docker Hub (Optional)
-                sh "docker tag ${env.IMAGE_NAME} shiv702/${env.IMAGE_NAME}:latest"
-                sh "docker push shiv702/${env.IMAGE_NAME}:latest"
+                // Login to Docker Hub using credentials stored in Jenkins
+                withCredentials([usernamePassword(credentialsId: 'Docker-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh """
+                        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+                        docker tag ${env.IMAGE_NAME} ${DOCKER_USERNAME}/${env.IMAGE_NAME}:latest
+                        docker push ${DOCKER_USERNAME}/${env.IMAGE_NAME}:latest
+                    """
+                }
             }
         }
         stage('Deploy to EC2 Instances') {
