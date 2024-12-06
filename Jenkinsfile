@@ -22,41 +22,63 @@ pipeline {
         }
         stage('Deploy to EC2 Instances') {
             parallel {
-                script {
-                    def servers = env.SERVERS.split(',')
-                    def parallelSteps = [:]
-                    servers.each { server ->
-                        parallelSteps["Deploy to ${server}"] = {
-                            stage("Deploy to ${server}") {
-                                sshagent([env.SSH_CREDENTIALS]) {
-                                    sh """
-                                        # Ensure directory exists and set permissions for the ubuntu user
-                                        ssh -o StrictHostKeyChecking=no ubuntu@${server} '
-                                            sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
-                                            sudo chown ubuntu:ubuntu ${env.DOCKER_WORK_DIR}
-                                        '
+                stage('Deploy to 13.49.46.222') {
+                    steps {
+                        sshagent([env.SSH_CREDENTIALS]) {
+                            sh """
+                                # Ensure directory exists and set permissions for the ubuntu user
+                                ssh -o StrictHostKeyChecking=no ubuntu@13.49.46.222 '
+                                    sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
+                                    sudo chown ubuntu:ubuntu ${env.DOCKER_WORK_DIR}
+                                '
 
-                                        # Stop and remove the container gracefully
-                                        ssh -o StrictHostKeyChecking=no ubuntu@${server} '
-                                            docker stop ${env.CONTAINER_NAME} 2>/dev/null || true &&
-                                            docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
-                                        '
+                                # Stop and remove the container gracefully
+                                ssh -o StrictHostKeyChecking=no ubuntu@13.49.46.222 '
+                                    docker stop ${env.CONTAINER_NAME} 2>/dev/null || true &&
+                                    docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
+                                '
 
-                                        # Copy files to the EC2 instance
-                                        scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@${server}:${env.DOCKER_WORK_DIR}/
+                                # Copy files to the EC2 instance
+                                scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@13.49.46.222:${env.DOCKER_WORK_DIR}/
 
-                                        # Build and run the Docker container
-                                        ssh -o StrictHostKeyChecking=no ubuntu@${server} '
-                                            cd ${env.DOCKER_WORK_DIR} &&
-                                            docker build -t ${env.IMAGE_NAME} . &&
-                                            docker run -d -p 81:80 --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
-                                        '
-                                    """
-                                }
-                            }
+                                # Build and run the Docker container
+                                ssh -o StrictHostKeyChecking=no ubuntu@13.49.46.222 '
+                                    cd ${env.DOCKER_WORK_DIR} &&
+                                    docker build -t ${env.IMAGE_NAME} . &&
+                                    docker run -d -p 81:80 --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
+                                '
+                            """
                         }
                     }
-                    parallel parallelSteps
+                }
+                stage('Deploy to 13.53.176.48') {
+                    steps {
+                        sshagent([env.SSH_CREDENTIALS]) {
+                            sh """
+                                # Ensure directory exists and set permissions for the ubuntu user
+                                ssh -o StrictHostKeyChecking=no ubuntu@13.53.176.48 '
+                                    sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
+                                    sudo chown ubuntu:ubuntu ${env.DOCKER_WORK_DIR}
+                                '
+
+                                # Stop and remove the container gracefully
+                                ssh -o StrictHostKeyChecking=no ubuntu@13.53.176.48 '
+                                    docker stop ${env.CONTAINER_NAME} 2>/dev/null || true &&
+                                    docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
+                                '
+
+                                # Copy files to the EC2 instance
+                                scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@13.53.176.48:${env.DOCKER_WORK_DIR}/
+
+                                # Build and run the Docker container
+                                ssh -o StrictHostKeyChecking=no ubuntu@13.53.176.48 '
+                                    cd ${env.DOCKER_WORK_DIR} &&
+                                    docker build -t ${env.IMAGE_NAME} . &&
+                                    docker run -d -p 81:80 --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
+                                '
+                            """
+                        }
+                    }
                 }
             }
         }
