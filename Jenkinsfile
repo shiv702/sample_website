@@ -52,12 +52,6 @@ pipeline {
                                     docker rm ${env.CONTAINER_NAME} 2>/dev/null || true
                                 '
 
-                                  # Free port 80 if it is already in use
-                                ssh -o StrictHostKeyChecking=no ubuntu@${server} '
-                                    PID=$(sudo lsof -t -i:80) &&
-                                    if [ ! -z "$PID" ]; then sudo kill -9 $PID; fi
-                                '
-
                                 # Copy files to the EC2 instance
                                 scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@${server}:${env.DOCKER_WORK_DIR}/
 
