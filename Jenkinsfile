@@ -43,8 +43,8 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ubuntu@${server} '
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
                                     sudo rm -rf ${env.DOCKER_WORK_DIR}/* &&
-                                    sudo docker stop ${env.IMAGE_NAME} || true &&
-                                    sudo docker rm ${env.IMAGE_NAME} || true
+                                    sudo docker stop ${env.CONTAINER_NAME} || true &&
+                                    sudo docker rm ${env.CONTAINER_NAME} || true
                                 '
                                 
                                 # Copy necessary files to EC2 instance
