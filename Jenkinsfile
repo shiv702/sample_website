@@ -40,7 +40,7 @@ pipeline {
                         sshagent([env.SSH_CREDENTIALS]) {
                             sh """
                                 # SSH into EC2 instance and prepare Docker environment
-                                ssh -o StrictHostKeyChecking=no ec2-user@${server} '
+                                ssh -o StrictHostKeyChecking=no ubuntu@${server} '
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
                                     sudo rm -rf ${env.DOCKER_WORK_DIR}/* &&
                                     sudo docker stop ${env.IMAGE_NAME} || true &&
@@ -48,10 +48,10 @@ pipeline {
                                 '
                                 
                                 # Copy necessary files to EC2 instance
-                                scp -o StrictHostKeyChecking=no Dockerfile index.html ec2-user@${server}:${env.DOCKER_WORK_DIR}/
+                                scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@${server}:${env.DOCKER_WORK_DIR}/
                                 
                                 # Build and run Docker container on EC2 instance
-                                ssh -o StrictHostKeyChecking=no ec2-user@${server} '
+                                ssh -o StrictHostKeyChecking=no ubuntu@${server} '
                                     cd ${env.DOCKER_WORK_DIR} &&
                                     sudo docker build -t ${env.IMAGE_NAME} . &&
                                     sudo docker run -d -p 80:80 --name ${env.IMAGE_NAME} ${env.IMAGE_NAME}
