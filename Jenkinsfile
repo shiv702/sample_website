@@ -3,7 +3,6 @@ pipeline {
     environment {
         IMAGE_NAME = 'sample-website'  // Docker image name
         DOCKER_WORK_DIR = '/tmp/deploy'  // Working directory on EC2
-        SERVERS = env.SERVERS.split(',') // Split SERVERS into a list
     }
     stages {
         stage('Clone Repository') {
