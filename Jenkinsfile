@@ -59,7 +59,7 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ubuntu@${server} '
                                     cd ${env.DOCKER_WORK_DIR} &&
                                     docker build -t ${env.IMAGE_NAME} . &&
-                                    docker run -d -p 80:80 --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
+                                    docker run -d -p 81:80 --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
                                 '
                             """
                         }
