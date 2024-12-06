@@ -25,8 +25,8 @@ pipeline {
             steps {
                 echo 'Tagging and pushing Docker image to repository...'
                 // Tag and push to Docker Hub (Optional)
-                sh "docker tag ${env.IMAGE_NAME} <dockerhub-username>/${env.IMAGE_NAME}:latest"
-                sh "docker push <dockerhub-username>/${env.IMAGE_NAME}:latest"
+                sh "docker tag ${env.IMAGE_NAME} shiv702/${env.IMAGE_NAME}:latest"
+                sh "docker push shiv702/${env.IMAGE_NAME}:latest"
             }
         }
         stage('Deploy to EC2 Instances') {
