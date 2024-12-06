@@ -5,7 +5,7 @@ pipeline {
         CONTAINER_NAME = 'sample-website-container' // Docker container name
         DOCKER_WORK_DIR = '/usr/share/nginx/html'        // Working directory on EC2
         SERVERS = '13.49.46.222'               // Comma-separated list of server IPs
-        SSH_CREDENTIALS = 'ssh-credentials-id' // Replace with your Jenkins SSH credentials ID
+        SSH_CREDENTIALS = 'SSH_CREDENTIALS' // Replace with your Jenkins SSH credentials ID
     }
     stages {
         stage('Clone Repository') {
