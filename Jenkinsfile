@@ -8,7 +8,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo 'Cloning the repository...'
-                git 'https://github.com/<your-repository>/sample-website.git'
+                git 'https://github.com/shiv702/sample_website.git'
             }
         }
         stage('Build Docker Image') {
