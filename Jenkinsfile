@@ -35,12 +35,18 @@ pipeline {
         stage('Deploy to EC2 Instances') {
             steps {
                 script {
+                    echo "SERVERS List: ${SERVERS}"  // Debugging line to check servers
+                    // Check if SERVERS list is empty
+                    if (SERVERS.size() == 0) {
+                        error "No servers specified. Please set the SERVERS environment variable."
+                    }
+
                     // Iterate through all servers for deployment
                     for (server in SERVERS) {
                         echo "Deploying to ${server}..."
                         sshagent([env.SSH_CREDENTIALS]) {
                             sh """
-                                ssh -o StrictHostKeyChecking=no ubuntu@${server} "
+                                ssh -o StrictHostKeyChecking=no ec2-user@${server} "
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
                                     sudo rm -rf ${env.DOCKER_WORK_DIR}/* &&
                                     sudo docker stop ${env.IMAGE_NAME} || true &&
