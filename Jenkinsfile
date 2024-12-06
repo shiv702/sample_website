@@ -40,7 +40,7 @@ pipeline {
                         echo "Deploying to ${server}..."
                         sshagent([env.SSH_CREDENTIALS]) {
                             sh """
-                                ssh -o StrictHostKeyChecking=no ec2-user@${server} "
+                                ssh -o StrictHostKeyChecking=no ubuntu@${server} "
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
                                     sudo rm -rf ${env.DOCKER_WORK_DIR}/* &&
                                     sudo docker stop ${env.IMAGE_NAME} || true &&
