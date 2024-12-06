@@ -45,14 +45,14 @@ pipeline {
                         echo "Deploying to ${SERVERS}..."
                         sshagent([env.SSH_CREDENTIALS]) {
                             sh """
-                                ssh -o StrictHostKeyChecking=no ec2-user@${server} "
+                                ssh -o StrictHostKeyChecking=no ubuntu@${SERVERS} "
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
                                     sudo rm -rf ${env.DOCKER_WORK_DIR}/* &&
                                     sudo docker stop ${env.IMAGE_NAME} || true &&
                                     sudo docker rm ${env.IMAGE_NAME} || true
                                 "
-                                scp -o StrictHostKeyChecking=no Dockerfile index.html ec2-user@${SERVERS}:${env.DOCKER_WORK_DIR}/
-                                ssh -o StrictHostKeyChecking=no ec2-user@${SERVERS} "
+                                scp -o StrictHostKeyChecking=no Dockerfile index.html ubuntu@${SERVERS}:${env.DOCKER_WORK_DIR}/
+                                ssh -o StrictHostKeyChecking=no ubuntu@${SERVERS} "
                                     cd ${env.DOCKER_WORK_DIR} &&
                                     sudo docker build -t ${env.IMAGE_NAME} . &&
                                     sudo docker run -d -p 80:80 --name ${env.IMAGE_NAME} ${env.IMAGE_NAME}
