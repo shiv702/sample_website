@@ -1,24 +1,30 @@
 pipeline {
     agent any
     environment {
-        SERVERS = env.SERVERS.split(',') // Fetch SERVERS as a list
+        // Define the necessary environment variables
+        IMAGE_NAME = 'sample-website'  // Change to your image name if needed
+        DOCKER_WORK_DIR = '/tmp/deploy'  // Change the work directory as needed
+        SERVERS = env.SERVERS.split(',') // Split SERVERS variable into a list
     }
     stages {
         stage('Clone Repository') {
             steps {
                 echo 'Cloning the repository...'
-                git 'https://github.com/shiv702/sample_website.git' // Replace with your repository URL
+                // Specify the branch and repository explicitly
+                git branch: 'main', url: 'https://github.com/shiv702/sample_website.git', credentialsId: 'github-credentials-id' // Replace with your credentialsId
             }
         }
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
+                // Build the Docker image
                 sh "docker build -t ${env.IMAGE_NAME} ."
             }
         }
         stage('Push Docker Image (Optional)') {
             steps {
                 echo 'Tagging and pushing Docker image to repository...'
+                // Tag and push to Docker Hub (Optional)
                 sh "docker tag ${env.IMAGE_NAME} <dockerhub-username>/${env.IMAGE_NAME}:latest"
                 sh "docker push <dockerhub-username>/${env.IMAGE_NAME}:latest"
             }
@@ -26,9 +32,11 @@ pipeline {
         stage('Deploy to EC2 Instances') {
             steps {
                 script {
+                    // Iterate through all servers for deployment
                     for (server in SERVERS) {
                         echo "Deploying to ${server}..."
                         sshagent([env.SSH_CREDENTIALS]) {
+                            // SSH commands for deployment
                             sh """
                                 ssh -o StrictHostKeyChecking=no ec2-user@${server} "
                                     sudo mkdir -p ${env.DOCKER_WORK_DIR} &&
